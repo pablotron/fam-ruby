@@ -1,0 +1,31 @@
+* Monday, May 27 20:11:45 2002 EST, <pabs@pablotron.org>
+  * fam.c: disabled Fam::Connection#close; it's handled automagically by the
+    free method now.
+  * famtest.rb: moved to examples/
+  * event_codes.txt: moved to doc/
+  * fam.c: added select() usage example to Fam::Connection#fd documentation.
+
+* Monday, May 27 21:17:24 2002 EST, <pabs@pablotron.org>
+  * examples/dirmon.rb: added this examples
+  * README: created README
+  * examples/dirmon.rb: full comments
+  * fam.c: removed reference to Fam::Connection#close (rdoc was finding it
+    even though it was commented out).
+  * doc/: regenerated documentation
+  * released version 0.1.0
+
+* Monday, May 27 21:35:05 2002 EST, <pabs@pablotron.org>
+  * minor updates to README
+
+* Tuesday, May 28 10:19:10 2002 EST, <pabs@pablotron.org>
+  * README: added reference to rdoc-generated documentation in intro.
+  * doc/event_codes.txt: added note about EXEC and ENDEXEC events not
+    working on non-imon Linux systems.
+
+* Wed Jun 25 16:08:10 2003, pabs <pabs@pablotron.org>
+  * fam.c: return request numbers with INT2NUM() instead of INT2FIX()
+    (slightly safer)
+  * fam.c: switched from FAMMonitorFile2() to FAMMonitorFile() in 
+    Fam::Connection#monitor_file to avoid an apparent FAM bug reported
+    by Thomas Maier (Thomas.Maier@uni-kassel.de).
+  * released version 0.1.1.

@@ -1,0 +1,37 @@
+FAM-Ruby 0.1.1 README
+=====================
+
+This document was last updated on Tuesday, May 28 10:17:21 2002 EST.
+Please see the file COPYING for licensing and warranty information.  The
+latest version of this library is available at the following URL:
+http://www.pablotron.org/software/fam-ruby/.
+
+Introduction
+============
+FAM-Ruby is a Ruby interface to SGI's File Alteration Monitor
+(http://oss.sgi.com/projects/fam/).  FAM allows you to monitor files and
+directories for changes (file modification, creation, and removal, etc
+-- in an event-driven manner.  FAM is available on a variety of
+platforms, including Irix, Linux, and BSD variants (a patch for systems
+that use dnotify is also available).  An RDoc-generated API reference is
+available in doc/, and a brief description of each event code is
+available in doc/event_codes.txt.
+
+System Requirements
+===================
+- FAM, version 2.6.6.1 (or newer):
+  http://oss.sgi.com/projects/fam/
+- Ruby, version 1.6.7 (or newer):
+  http://www.ruby-lang.org/
+
+Installation
+============
+ruby ./extconf.rb            # generate Makefile
+make && su -c "make install" # compile and install library
+
+About the Author
+================
+Paul Duncan <pabs@pablotron.org>
+http://www.pablotron.org/
+
+See the file AUTHORS for additional contributions.
