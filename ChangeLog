@@ -29,3 +29,7 @@
     Fam::Connection#monitor_file to avoid an apparent FAM bug reported
     by Thomas Maier (Thomas.Maier@uni-kassel.de).
   * released version 0.1.1.
+
+* Fri Sep 26 14:18:26 2003, pabs <pabs@pablotron.org>
+  * initial improt to cvs
+  * remove doc/
