@@ -33,3 +33,7 @@
 * Fri Sep 26 14:18:26 2003, pabs <pabs@pablotron.org>
   * initial improt to cvs
   * remove doc/
+
+* Fri Sep 26 14:20:02 2003, pabs <pabs@pablotron.org>
+  * fam.c: patch from Jon Bernard <jbernard@roanoke.edu> to correct
+    warning

@@ -27,7 +27,7 @@
 #include <ruby.h>
 #include <fam.h>
 
-#define VERSION "0.1.1"
+#define VERSION "0.1.2"
 #define UNUSED(x) ((void) (x))
 
 static VALUE mFam,
@@ -391,7 +391,7 @@ static VALUE fam_conn_col(VALUE self, VALUE col, VALUE depth, VALUE mask) {
     char errstr[1024];
 
     snprintf(errstr, 1024,
-             "Couldn't monitor collection [\"%s\", %ld, \"%s\"]: %s",
+             "Couldn't monitor collection [\"%s\", %d, \"%s\"]: %s",
              RSTRING(col)->ptr ? RSTRING(col)->ptr : "NULL",
              NUM2INT(depth),
              RSTRING(mask)->ptr ? RSTRING(mask)->ptr : "NULL",
