@@ -10,12 +10,12 @@ Introduction
 ============
 FAM-Ruby is a Ruby interface to SGI's File Alteration Monitor
 (http://oss.sgi.com/projects/fam/).  FAM allows you to monitor files and
-directories for changes (file modification, creation, and removal, etc
--- in an event-driven manner.  FAM is available on a variety of
-platforms, including Irix, Linux, and BSD variants (a patch for systems
-that use dnotify is also available).  An RDoc-generated API reference is
+directories for changes (file modification, creation, and removal) -- in
+an event-driven manner.  FAM is available on a variety of platforms,
+including Irix, Linux, and BSD variants (a patch for systems that use
+dnotify is also available).  An RDoc-generated API reference is
 available in doc/, and a brief description of each event code is
-available in doc/event_codes.txt.
+available in event_codes.txt.
 
 System Requirements
 ===================

@@ -64,3 +64,7 @@
 * Sat Jul 10 18:49:34 2004, pabs <pabs@pablotron.org>
   * fam.c: change Fam::FAMError to Fam::Error
   * fam.c: update all documentation to describe exceptions
+
+* Sat Jul 10 19:54:16 2004, pabs <pabs@pablotron.org>
+  * README: minor updates
+  * re-added event_codes.txt
