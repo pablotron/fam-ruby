@@ -40,3 +40,6 @@
 
 * Fri Sep 26 16:02:39 2003, pabs <pabs@pablotron.org>
   * releasing version 0.1.2.
+
+* Thu Jan 22 15:30:43 2004, pabs <pabs@pablotron.org>
+  * applied unique reqnum patch from MORI Daijiro <mori@epepe.com>

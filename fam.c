@@ -312,6 +312,7 @@ static VALUE fam_conn_dir(VALUE self, VALUE dir) {
 
   Data_Get_Struct(self, FAMConnection, conn);
   req = malloc(sizeof(FAMRequest));
+  FAMREQUEST_GETREQNUM(req) = (int) req;
   err = FAMMonitorDirectory2(conn, RSTRING(dir)->ptr, req);
 
   if (err == -1) {
@@ -347,6 +348,7 @@ static VALUE fam_conn_file(VALUE self, VALUE file) {
 
   Data_Get_Struct(self, FAMConnection, conn);
   req = malloc(sizeof(FAMRequest));
+  FAMREQUEST_GETREQNUM(req) = (int) req;
   err = FAMMonitorFile(conn, RSTRING(file)->ptr, req, NULL);
 
   if (err == -1) {
@@ -380,6 +382,7 @@ static VALUE fam_conn_col(VALUE self, VALUE col, VALUE depth, VALUE mask) {
 
   Data_Get_Struct(self, FAMConnection, conn);
   req = malloc(sizeof(FAMRequest));
+  FAMREQUEST_GETREQNUM(req) = (int) req;
   err = FAMMonitorCollection(conn,
                              RSTRING(col)->ptr,
                              req,
