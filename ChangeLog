@@ -60,3 +60,7 @@
 
 * Sat Jul 10 18:35:58 2004, pabs <pabs@pablotron.org>
   * AUTHORS: added entry for Nobuyoshi Nakada <nobu@ruby-lang.org>
+
+* Sat Jul 10 18:49:34 2004, pabs <pabs@pablotron.org>
+  * fam.c: change Fam::FAMError to Fam::Error
+  * fam.c: update all documentation to describe exceptions

@@ -278,6 +278,10 @@ fam_conn_s_open(int argc, VALUE *argv, VALUE klass)
 /*
  * Create a new connection to the FAM daemon.
  *
+ * Raises an ArgumentError exception if the number of arguments is not 0
+ * or 1, or a Fam::Error exception if a connection to FAM could not
+ * be established.
+ *
  * Examples:
  *   # connect and tell FAM the application is named 'foo'
  *   fam = Fam::Connection.new 'foo'
@@ -313,6 +317,9 @@ static VALUE fam_conn_init(int argc, VALUE *argv, VALUE self)
 /*
  * Close a Fam::Connection.
  *
+ * Raises a Fam::Error exception if the connection to FAM could not
+ * be closed.
+ *
  * Examples:
  *   fam.close
  *
@@ -341,6 +348,9 @@ static VALUE fam_conn_close(VALUE self)
  *
  * Returns a Fam::Request object, which is used to identify the monitor
  * associated with events.
+ *
+ * Raises a Fam::Error exception if the directory could not be
+ * monitored.
  *
  * Aliases:
  *   Fam::Connection#monitor_dir
@@ -377,6 +387,8 @@ static VALUE fam_conn_dir(VALUE self, VALUE dir)
  * Returns a Fam::Request object, which is used to identify the monitor
  * associated with events.
  *
+ * Raises a Fam::Error exception if the file could not be monitored.
+ *
  * Aliases:
  *   Fam::Connection#file
  *
@@ -406,6 +418,9 @@ static VALUE fam_conn_file(VALUE self, VALUE file)
 
 /*
  * Monitor a collection.
+ *
+ * Raises a Fam::Error exception if the collection could not be
+ * monitored.
  *
  * Aliases:
  *   Fam::Collection#monitor_col
@@ -446,6 +461,9 @@ static VALUE fam_conn_col(VALUE self, VALUE col, VALUE depth, VALUE mask)
 /*
  * Suspend (stop monitoring) a monitor request.
  *
+ * Raises a Fam::Error exception if the monitor request could not be
+ * suspended.
+ * 
  * Aliases:
  *   Fam::Connection#suspend
  *
@@ -475,6 +493,9 @@ static VALUE fam_conn_suspend(VALUE self, VALUE request)
 /*
  * Resume (start monitoring) a monitor request.
  *
+ * Raises a Fam::Error exception if the monitor request could not be
+ * resumed.
+ * 
  * Aliases:
  *   Fam::Connection#resume
  *
@@ -503,6 +524,9 @@ static VALUE fam_conn_resume(VALUE self, VALUE request)
 
 /*
  * Cancel a monitor request.
+ *
+ * Raises a Fam::Error exception if the monitor request could not be
+ * cancelled.
  *
  * Note: this method invalidates the specified monitor request.
  *
@@ -536,6 +560,9 @@ static VALUE fam_conn_cancel(VALUE self, VALUE request)
  * Get the next event from the event queue, or block until an event is
  * available.
  *
+ * Raises a Fam::Error exception if FAM couldn't check for pending
+ * events, or if FAM-Ruby couldn't get the next FAM event.
+ * 
  * Aliases:
  *   Fam::Connection#next_ev
  *   Fam::Connection#ev
@@ -558,10 +585,8 @@ static VALUE fam_conn_next_ev(VALUE self)
 
     FD_ZERO(&rfds);
     do {
-      if (err == -1) {
-	rb_raise(eError, "Couldn't check for pending FAM events: %s",
-		 fam_error());
-      }
+      if (err == -1)
+        rb_raise(eError, "Couldn't check for pending FAM events: %s", fam_error());
       FD_SET(fd, &rfds);
       rb_thread_select(fd + 1, &rfds, NULL, NULL, NULL);
     } while (!FD_ISSET(fd, &rfds) || !(err = FAMPending(conn)));
@@ -580,6 +605,9 @@ static VALUE fam_conn_next_ev(VALUE self)
 
 /*
  * Are there any events in the queue?
+ *
+ * Raises a Fam::Error exception if FAM couldn't check for pending
+ * events.
  *
  * Aliases:
  *   Fam::Connection#pending
@@ -606,8 +634,7 @@ static VALUE fam_conn_pending(VALUE self)
 /*
  * Set the debug level of a Fam::Connection object.
  *
- * Note: This method is implemented in the bindings, but not in FAM
- * itself.
+ * Raises a Fam::Error exception on failure.
  *
  * Aliases:
  *   Fam::Connection#debug
@@ -667,7 +694,7 @@ void Init_fam(void)
   mFam = rb_define_module("Fam");
 
   rb_define_const(mFam, "VERSION", rb_str_new2(VERSION));
-  eError = rb_define_class_under(mFam, "FAMError", rb_eStandardError);
+  eError = rb_define_class_under(mFam, "Error", rb_eStandardError);
 
   /********************************/
   /* define Debug module          */
