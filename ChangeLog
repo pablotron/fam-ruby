@@ -37,3 +37,6 @@
 * Fri Sep 26 14:20:02 2003, pabs <pabs@pablotron.org>
   * fam.c: patch from Jon Bernard <jbernard@roanoke.edu> to correct
     warning
+
+* Fri Sep 26 16:02:39 2003, pabs <pabs@pablotron.org>
+  * releasing version 0.1.2.
