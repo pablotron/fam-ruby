@@ -27,24 +27,30 @@
 #include <ruby.h>
 #include <fam.h>
 
-#define VERSION "0.1.3"
+#define VERSION "0.1.4"
 #define UNUSED(x) ((void) (x))
 
-static VALUE mFam,
-             mDebug,
-             cConn,
-             cReq,
-             cEvent;
+static VALUE mFam;
+static VALUE mDebug;
+static VALUE cConn;
+static VALUE cReq;
+static VALUE cEvent;
+static VALUE eError;
 
-static void dont_free(void *value) {
-  UNUSED(value);
+static const char *
+fam_error(void)
+{
+  const char *err = FamErrlist[FAMErrno];
+  if (err) return err;
+  return "Unknown error";
 }
 
 /*******************/
 /* REQUEST METHODS */
 /*******************/
-static VALUE wrap_req(FAMRequest *req) {
-  return Data_Wrap_Struct(cReq, 0, dont_free, req);
+static VALUE wrap_req(FAMRequest *req)
+{
+  return Data_Wrap_Struct(cReq, 0, 0, req);
 }
 
 /*
@@ -59,7 +65,8 @@ static VALUE wrap_req(FAMRequest *req) {
  *   num = req.request
  *
  */
-static VALUE fam_req_num(VALUE self) {
+static VALUE fam_req_num(VALUE self)
+{
   FAMRequest *req;
 
   Data_Get_Struct(self, FAMRequest, req);
@@ -69,8 +76,9 @@ static VALUE fam_req_num(VALUE self) {
 /*****************/
 /* EVENT METHODS */
 /*****************/
-static VALUE wrap_ev(FAMEvent *ev) {
-  return Data_Wrap_Struct(cEvent, 0, free, ev);
+static VALUE wrap_ev(FAMEvent *ev)
+{
+  return Data_Wrap_Struct(cEvent, 0, -1, ev);
 }
 
 /*
@@ -88,12 +96,13 @@ static VALUE wrap_ev(FAMEvent *ev) {
  *   host = ev.host
  *
  */
-static VALUE fam_ev_host(VALUE self) {
+static VALUE fam_ev_host(VALUE self)
+{
   FAMEvent *ev;
 
   Data_Get_Struct(self, FAMEvent, ev);
 
-  if (ev->hostname && strlen(ev->hostname))
+  if (ev->hostname && *ev->hostname)
     return rb_str_new2(ev->hostname);
   else 
     return rb_str_new2("localhost");
@@ -113,7 +122,8 @@ static VALUE fam_ev_host(VALUE self) {
  *   path = ev.file
  *
  */
-static VALUE fam_ev_file(VALUE self) {
+static VALUE fam_ev_file(VALUE self)
+{
   FAMEvent *ev;
 
   Data_Get_Struct(self, FAMEvent, ev);
@@ -130,7 +140,8 @@ static VALUE fam_ev_file(VALUE self) {
  *   code = ev.code
  *
  */
-static VALUE fam_ev_code(VALUE self) {
+static VALUE fam_ev_code(VALUE self)
+{
   FAMEvent *ev;
 
   Data_Get_Struct(self, FAMEvent, ev);
@@ -152,7 +163,8 @@ static VALUE fam_ev_code(VALUE self) {
  *   req = ev.request_number
  *
  */
-static VALUE fam_ev_req(VALUE self) {
+static VALUE fam_ev_req(VALUE self)
+{
   FAMEvent *ev;
 
   Data_Get_Struct(self, FAMEvent, ev);
@@ -166,7 +178,8 @@ static VALUE fam_ev_req(VALUE self) {
  *   puts 'event: ' << ev.to_s
  *
  */
-static VALUE fam_ev_to_s(VALUE self) {
+static VALUE fam_ev_to_s(VALUE self)
+{
   FAMEvent *ev;
   char str[1024];
   static char *ev_code_list[] = {
@@ -194,19 +207,22 @@ static VALUE fam_ev_to_s(VALUE self) {
 /**********************/
 /* CONNECTION METHODS */
 /**********************/
-static void fam_conn_free(void *conn) {
-  if (conn) {
-    FAMClose((FAMConnection*) conn);
-    free(conn);
-  }
+static void fam_conn_free(void *conn)
+{
+  FAMClose((FAMConnection*) conn);
+  xfree(conn);
 }
 
+static VALUE fam_conn_s_alloc(VALUE klass)
+{
+  FAMConnection *conn = ALLOC(FAMConnection);
+  memset(conn, 0, sizeof(FAMConnection));
+  return Data_Wrap_Struct(klass, 0, fam_conn_free, conn);
+}
+
+#ifndef HAVE_RB_DEFINE_ALLOC_FUNC
 /*
  * Create a new connection to the FAM daemon.
- *
- * Aliases:
- *   Fam::Connection.open
- *   Fam::Connection.open2
  *
  * Examples:
  *   # connect and tell FAM the application is named 'foo'
@@ -216,14 +232,66 @@ static void fam_conn_free(void *conn) {
  *   fam = Fam::Connection.new
  *
  */
-VALUE fam_conn_new(int argc, VALUE *argv, VALUE klass) {
+static VALUE fam_conn_s_new(int argc, VALUE *argv, VALUE klass)
+{
+  VALUE self = fam_conn_s_alloc(klass);
+
+  rb_obj_call_init(self, argc, argv);
+  return self;
+}
+#endif
+
+static VALUE conn_close(VALUE self)
+{
+  return rb_funcall(self, rb_intern("close"), 0, 0);
+}
+
+/*
+ * Create a new connection to the FAM daemon.
+ *
+ * Aliases:
+ *   Fam::Connection.open2
+ *
+ * Examples:
+ *   # connect and tell FAM the application is named 'foo'
+ *   fam = Fam::Connection.open 'foo'
+ *
+ *   # just connect
+ *   fam = Fam::Connection.open
+ *
+ *   # connect and close automatically
+ *   Fam::Connection.open('foo') {|fam| ... }
+ *
+ */
+static VALUE
+fam_conn_s_open(int argc, VALUE *argv, VALUE klass)
+{
+  VALUE self = rb_class_new_instance(argc, argv, klass);
+
+  if (rb_block_given_p()) {
+    return rb_ensure(rb_yield, self, conn_close, self);
+  }
+
+  return self;
+}
+
+/*
+ * Create a new connection to the FAM daemon.
+ *
+ * Examples:
+ *   # connect and tell FAM the application is named 'foo'
+ *   fam = Fam::Connection.new 'foo'
+ *
+ *   # just connect
+ *   fam = Fam::Connection.new
+ *
+ */
+static VALUE fam_conn_init(int argc, VALUE *argv, VALUE self)
+{
   FAMConnection *conn;
-  VALUE self;
   int err = 0;
 
-  conn = malloc(sizeof(FAMConnection));
-  memset(conn, 0, sizeof(FAMConnection));
-
+  Data_Get_Struct(self, FAMConnection, conn);
   switch (argc) {
     case 0:
       err = FAMOpen(conn);
@@ -236,28 +304,9 @@ VALUE fam_conn_new(int argc, VALUE *argv, VALUE klass) {
   }
   
   if (err == -1) {
-    char errstr[1024];
-
-    snprintf(errstr, 1024, "Couldn't open FAM connection: %s",
-             FamErrlist[FAMErrno] ? FamErrlist[FAMErrno] : "Unknown error");
-    rb_raise(rb_eException, errstr);
+    rb_raise(eError, "Couldn't open FAM connection: %s", fam_error());
   }
-  
-  self = Data_Wrap_Struct(klass, 0, fam_conn_free, conn);
-  rb_obj_call_init(self, 0, NULL);
-  
-  return self;
-}
 
-/*
- * Constructor for Fam::Connection object.
- *
- * This method is currently empty.  You should never call this method
- * directly unless you're instantiating a derived class (ie, you know
- * what you're doing).
- *
- */
-static VALUE fam_conn_init(VALUE self) {
   return self;
 }
 
@@ -271,24 +320,21 @@ static VALUE fam_conn_init(VALUE self) {
   
 /* this causes a segfault, since ruby attempts to close the connection
  * when it goes out of scope.  We'll let ruby take care of it. :) */
-/* static VALUE fam_conn_close(VALUE self) {
+static VALUE fam_conn_close(VALUE self)
+{
   FAMConnection *conn;
   int err;
 
   Data_Get_Struct(self, FAMConnection, conn);
   err = FAMClose(conn);
+  DATA_PTR(self) = NULL;
 
   if (err == -1) {
-    char errstr[1024];
-
-    snprintf(errstr, 1024, "Couldn't close FAM connection: %s",
-             FamErrlist[FAMErrno] ? FamErrlist[FAMErrno] : "Unknown error");
-    
-    rb_raise(rb_eException, errstr);
+    rb_raise(eError, "Couldn't close FAM connection: %s", fam_error());
   }
   
   return self;
-}*/
+}
 
 /*
  * Monitor a directory.
@@ -305,24 +351,21 @@ static VALUE fam_conn_init(VALUE self) {
  *   req = fam.monitor_directory '/tmp'
  *
  */
-static VALUE fam_conn_dir(VALUE self, VALUE dir) {
+static VALUE fam_conn_dir(VALUE self, VALUE dir)
+{
   FAMConnection *conn;
   FAMRequest *req = NULL;
   int err;
 
   Data_Get_Struct(self, FAMConnection, conn);
-  req = malloc(sizeof(FAMRequest));
+  req = ALLOC(FAMRequest);
   FAMREQUEST_GETREQNUM(req) = (int) req;
   err = FAMMonitorDirectory2(conn, RSTRING(dir)->ptr, req);
 
   if (err == -1) {
-    char errstr[1024];
-
-    snprintf(errstr, 1024,
-             "Couldn't monitor directory \"%s\": %s",
-             RSTRING(dir)->ptr ? RSTRING(dir)->ptr : "NULL",
-             FamErrlist[FAMErrno] ? FamErrlist[FAMErrno] : "Unknown error");
-    rb_raise(rb_eException, errstr);
+    xfree(req);
+    rb_raise(eError, "Couldn't monitor directory \"%s\": %s",
+             RSTRING(dir)->ptr ? RSTRING(dir)->ptr : "NULL", fam_error());
   }
 
   return wrap_req(req);
@@ -341,24 +384,21 @@ static VALUE fam_conn_dir(VALUE self, VALUE dir) {
  *   req = fam.monitor_file '/var/log/messages'
  *
  */
-static VALUE fam_conn_file(VALUE self, VALUE file) {
+static VALUE fam_conn_file(VALUE self, VALUE file)
+{
   FAMConnection *conn;
   FAMRequest *req = NULL;
   int err;
 
   Data_Get_Struct(self, FAMConnection, conn);
-  req = malloc(sizeof(FAMRequest));
+  req = ALLOC(FAMRequest);
   FAMREQUEST_GETREQNUM(req) = (int) req;
   err = FAMMonitorFile(conn, RSTRING(file)->ptr, req, NULL);
 
   if (err == -1) {
-    char errstr[1024];
-
-    snprintf(errstr, 1024,
-             "Couldn't monitor file \"%s\": %s",
-             RSTRING(file)->ptr ? RSTRING(file)->ptr : "NULL", 
-             FamErrlist[FAMErrno] ? FamErrlist[FAMErrno] : "Unknown error");
-    rb_raise(rb_eException, errstr);
+    xfree(req);
+    rb_raise(eError, "Couldn't monitor file \"%s\": %s",
+             RSTRING(file)->ptr ? RSTRING(file)->ptr : "NULL", fam_error());
   }
 
   return wrap_req(req);
@@ -375,13 +415,14 @@ static VALUE fam_conn_file(VALUE self, VALUE file) {
  *   req = fam.monitor_col 'download/images', 1, '*.jpg'
  *
  */
-static VALUE fam_conn_col(VALUE self, VALUE col, VALUE depth, VALUE mask) {
+static VALUE fam_conn_col(VALUE self, VALUE col, VALUE depth, VALUE mask)
+{
   FAMConnection *conn;
   FAMRequest *req = NULL;
   int err;
 
   Data_Get_Struct(self, FAMConnection, conn);
-  req = malloc(sizeof(FAMRequest));
+  req = ALLOC(FAMRequest);
   FAMREQUEST_GETREQNUM(req) = (int) req;
   err = FAMMonitorCollection(conn,
                              RSTRING(col)->ptr,
@@ -391,15 +432,12 @@ static VALUE fam_conn_col(VALUE self, VALUE col, VALUE depth, VALUE mask) {
                              RSTRING(mask)->ptr);
 
   if (err == -1) {
-    char errstr[1024];
-
-    snprintf(errstr, 1024,
-             "Couldn't monitor collection [\"%s\", %d, \"%s\"]: %s",
+    xfree(req);
+    rb_raise(eError, "Couldn't monitor collection [\"%s\", %d, \"%s\"]: %s",
              RSTRING(col)->ptr ? RSTRING(col)->ptr : "NULL",
              NUM2INT(depth),
              RSTRING(mask)->ptr ? RSTRING(mask)->ptr : "NULL",
-             FamErrlist[FAMErrno] ? FamErrlist[FAMErrno] : "Unknown error");
-    rb_raise(rb_eException, errstr);
+	     fam_error());
   }
 
   return wrap_req(req);
@@ -416,7 +454,8 @@ static VALUE fam_conn_col(VALUE self, VALUE col, VALUE depth, VALUE mask) {
  *   fam.suspend req
  *
  */
-static VALUE fam_conn_suspend(VALUE self, VALUE request) {
+static VALUE fam_conn_suspend(VALUE self, VALUE request)
+{
   FAMConnection *conn;
   FAMRequest *req;
   int err;
@@ -426,13 +465,8 @@ static VALUE fam_conn_suspend(VALUE self, VALUE request) {
   err = FAMSuspendMonitor(conn, req);
 
   if (err == -1) {
-    char errstr[1024];
-
-    snprintf(errstr, 1024,
-             "Couldn't suspend monitor request %d: %s",
-             FAMREQUEST_GETREQNUM(req),
-             FamErrlist[FAMErrno] ? FamErrlist[FAMErrno] : "Unknown error");
-    rb_raise(rb_eException, errstr);
+    rb_raise(eError, "Couldn't suspend monitor request %d: %s",
+             FAMREQUEST_GETREQNUM(req), fam_error());
   }
 
   return self;
@@ -449,7 +483,8 @@ static VALUE fam_conn_suspend(VALUE self, VALUE request) {
  *   fam.resume req
  *
  */
-static VALUE fam_conn_resume(VALUE self, VALUE request) {
+static VALUE fam_conn_resume(VALUE self, VALUE request)
+{
   FAMConnection *conn;
   FAMRequest *req;
   int err;
@@ -459,13 +494,8 @@ static VALUE fam_conn_resume(VALUE self, VALUE request) {
   err = FAMResumeMonitor(conn, req);
 
   if (err == -1) {
-    char errstr[1024];
-
-    snprintf(errstr, 1024,
-             "Couldn't resume monitor request %d: %s",
-             FAMREQUEST_GETREQNUM(req),
-             FamErrlist[FAMErrno] ? FamErrlist[FAMErrno] : "Unknown error");
-    rb_raise(rb_eException, errstr);
+    rb_raise(eError, "Couldn't resume monitor request %d: %s",
+             FAMREQUEST_GETREQNUM(req), fam_error());
   }
 
   return self;
@@ -484,7 +514,8 @@ static VALUE fam_conn_resume(VALUE self, VALUE request) {
  *   fam.cancel req
  *
  */
-static VALUE fam_conn_cancel(VALUE self, VALUE request) {
+static VALUE fam_conn_cancel(VALUE self, VALUE request)
+{
   FAMConnection *conn;
   FAMRequest *req;
   int err;
@@ -494,13 +525,8 @@ static VALUE fam_conn_cancel(VALUE self, VALUE request) {
   err = FAMCancelMonitor(conn, req);
 
   if (err == -1) {
-    char errstr[1024];
-
-    snprintf(errstr, 1024,
-             "Couldn't cancel monitor request %d: %s",
-             FAMREQUEST_GETREQNUM(req),
-             FamErrlist[FAMErrno] ? FamErrlist[FAMErrno] : "Unknown error");
-    rb_raise(rb_eException, errstr);
+    rb_raise(eError, "Couldn't cancel monitor request %d: %s",
+             FAMREQUEST_GETREQNUM(req), fam_error());
   }
 
   return self;
@@ -518,21 +544,35 @@ static VALUE fam_conn_cancel(VALUE self, VALUE request) {
  *   ev = fam.next_event
  *
  */
-static VALUE fam_conn_next_ev(VALUE self) {
+static VALUE fam_conn_next_ev(VALUE self)
+{
   FAMConnection *conn;
   FAMEvent *ev = NULL;
   int err;
 
   Data_Get_Struct(self, FAMConnection, conn);
-  ev = malloc(sizeof(FAMEvent));
+
+  if (!(err = FAMPending(conn))) {
+    int fd = FAMCONNECTION_GETFD(conn);
+    fd_set rfds;
+
+    FD_ZERO(&rfds);
+    do {
+      if (err == -1) {
+	rb_raise(eError, "Couldn't check for pending FAM events: %s",
+		 fam_error());
+      }
+      FD_SET(fd, &rfds);
+      rb_thread_select(fd + 1, &rfds, NULL, NULL, NULL);
+    } while (!FD_ISSET(fd, &rfds) || !(err = FAMPending(conn)));
+  }
+
+  ev = ALLOC(FAMEvent);
   err = FAMNextEvent(conn, ev);
 
   if (err == -1) {
-    char errstr[1024];
-
-    snprintf(errstr, 1024, "Couldn't get next FAM event: %s",
-             FamErrlist[FAMErrno] ? FamErrlist[FAMErrno] : "Unknown error");
-    rb_raise(rb_eException, errstr);
+    xfree(ev);
+    rb_raise(eError, "Couldn't get next FAM event: %s", fam_error());
   }
 
   return wrap_ev(ev);
@@ -548,7 +588,8 @@ static VALUE fam_conn_next_ev(VALUE self) {
  *   puts 'no events pending' unless fam.pending?
  *
  */
-static VALUE fam_conn_pending(VALUE self) {
+static VALUE fam_conn_pending(VALUE self)
+{
   FAMConnection *conn;
   int err;
 
@@ -556,11 +597,7 @@ static VALUE fam_conn_pending(VALUE self) {
   err = FAMPending(conn);
 
   if (err == -1) {
-    char errstr[1024];
-
-    snprintf(errstr, 1024, "Couldn't check for pending FAM events: %s",
-             FamErrlist[FAMErrno] ? FamErrlist[FAMErrno] : "Unknown error");
-    rb_raise(rb_eException, errstr);
+    rb_raise(eError, "Couldn't check for pending FAM events: %s", fam_error());
   }
 
   return (err > 0) ? Qtrue : Qfalse;
@@ -579,7 +616,8 @@ static VALUE fam_conn_pending(VALUE self) {
  *   fam.debug = Fam::Debug::VERBOSE
  *
  */
-static VALUE fam_conn_set_debug(VALUE self, VALUE level) {
+static VALUE fam_conn_set_debug(VALUE self, VALUE level)
+{
   FAMConnection *conn;
   int err;
 
@@ -587,11 +625,7 @@ static VALUE fam_conn_set_debug(VALUE self, VALUE level) {
   err = FAMDebugLevel(conn, NUM2INT(level));
 
   if (err == -1) {
-    char errstr[1024];
-
-    snprintf(errstr, 1024, "Couldn't set debug level: %s",
-             FamErrlist[FAMErrno] ? FamErrlist[FAMErrno] : "Unknown error");
-    rb_raise(rb_eException, errstr);
+    rb_raise(eError, "Couldn't set debug level: %s", fam_error());
   }
 
   return self;
@@ -620,18 +654,21 @@ static VALUE fam_conn_set_debug(VALUE self, VALUE level) {
  *   select [io], , , 10
  *   
  */
-static VALUE fam_conn_fd(VALUE self) {
+static VALUE fam_conn_fd(VALUE self)
+{
   FAMConnection *conn;
 
   Data_Get_Struct(self, FAMConnection, conn);
   return INT2FIX(FAMCONNECTION_GETFD(conn));
 }
 
-void Init_fam(void) {
+void Init_fam(void)
+{
   mFam = rb_define_module("Fam");
 
   rb_define_const(mFam, "VERSION", rb_str_new2(VERSION));
-  
+  eError = rb_define_class_under(mFam, "FAMError", rb_eStandardError);
+
   /********************************/
   /* define Debug module          */
   /* (for connection debug level) */
@@ -644,13 +681,18 @@ void Init_fam(void) {
   /***************************/
   /* define Connection class */
   /***************************/
-  cConn = rb_define_class_under(mFam, "Connection", rb_cObject);
+  cConn = rb_define_class_under(mFam, "Connection", rb_cData);
   
-  rb_define_singleton_method(cConn, "new", fam_conn_new, -1);
-  rb_define_singleton_method(cConn, "open", fam_conn_new, -1);
-  rb_define_singleton_method(cConn, "open2", fam_conn_new, -1);
+#ifdef HAVE_RB_DEFINE_ALLOC_FUNC
+  rb_define_alloc_func(cConn, fam_conn_s_alloc);
+#else
+  rb_define_singleton_method(cConn, "new", fam_conn_s_new, -1);
+#endif
+  rb_define_singleton_method(cConn, "open", fam_conn_s_open, -1);
+  rb_define_singleton_method(cConn, "open2", fam_conn_s_open, -1);
 
-  rb_define_method(cConn, "initialize", fam_conn_init, 0);
+  rb_define_method(cConn, "initialize", fam_conn_init, -1);
+  rb_define_method(cConn, "close", fam_conn_close, 0);
   
   rb_define_method(cConn, "monitor_directory", fam_conn_dir, 1);
   rb_define_alias(cConn, "monitor_dir", "monitor_directory");
@@ -692,7 +734,7 @@ void Init_fam(void) {
   /**********************/
   /* define Event class */
   /**********************/
-  cEvent = rb_define_class_under(mFam, "Event", rb_cObject);
+  cEvent = rb_define_class_under(mFam, "Event", rb_cData);
 
   rb_define_method(cEvent, "hostname", fam_ev_host, 0);
   rb_define_alias(cEvent, "host", "hostname");
@@ -727,7 +769,7 @@ void Init_fam(void) {
   /************************/
   /* define Request class */
   /************************/
-  cReq = rb_define_class_under(mFam, "Request", rb_cObject);
+  cReq = rb_define_class_under(mFam, "Request", rb_cData);
 
   rb_define_method(cReq, "reqnum", fam_req_num, 0);
   rb_define_alias(cReq, "request_number", "reqnum");

@@ -4,6 +4,7 @@ require 'mkmf'
 # isn't one (at least not one provided with Debian)
 
 if have_library('fam', 'FAMOpen')
+  have_func('rb_define_alloc_func', 'ruby.h')
   $LDFLAGS << ' -lfam'
   create_makefile("fam")
 end

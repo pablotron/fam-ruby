@@ -57,3 +57,6 @@
   * fam.c: incremented version to 0.1.4
   * README: updated copyright year
   * COPYING: updated copyright year
+
+* Sat Jul 10 18:35:58 2004, pabs <pabs@pablotron.org>
+  * AUTHORS: added entry for Nobuyoshi Nakada <nobu@ruby-lang.org>

@@ -3,3 +3,9 @@ Paul Duncan <pabs@pablotron.org>
 
 MORI Daijiro <mori@epepe.com>
 * unique reqnum patch
+
+Nobuyoshi Nakada <nobu@ruby-lang.org>
+* added alloc calls (compliant with 1.8 or later)
+* made FAM-Ruby interruptible and thread switchable.
+* subclass Exception to FAM::FAMError
+
