@@ -28,7 +28,7 @@ spec = Gem::Specification.new do |s|
   #### Load-time details: library and application (you will need one or both).
   s.autorequire = 'fam'
   s.has_rdoc = true
-  s.rdoc_options = ['fam.c', 'README', 'ChangeLog', 'AUTHORS', 'COPYING', 'examples/dirmon.rb', 'examples/famtest.rb', 'event_codes.txt']
+  s.rdoc_options = ['--ri-site', '--webcvs', 'http://cvs.pablotron.org/cgi-bin/viewcvs.cgi/fam-ruby/', 'fam.c', 'README', 'ChangeLog', 'AUTHORS', 'COPYING', 'examples/dirmon.rb', 'examples/famtest.rb', 'event_codes.txt']
 
   #### Author and project details.
 
