@@ -52,3 +52,8 @@
 * Thu Jan 22 15:39:11 2004, pabs <pabs@pablotron.org>
   * added AUTHORS
   * _really_ releasing version 0.1.3 :)
+
+* Sat Jul 10 18:20:04 2004, pabs <pabs@pablotron.org>
+  * fam.c: incremented version to 0.1.4
+  * README: updated copyright year
+  * COPYING: updated copyright year
