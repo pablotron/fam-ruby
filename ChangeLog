@@ -68,3 +68,7 @@
 * Sat Jul 10 19:54:16 2004, pabs <pabs@pablotron.org>
   * README: minor updates
   * re-added event_codes.txt
+
+* Sat Jul 10 19:56:30 2004, pabs <pabs@pablotron.org>
+  * MANIFEST: updated to reflect event_codes.txt
+  * releasing 0.1.4
