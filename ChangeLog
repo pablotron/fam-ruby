@@ -78,3 +78,6 @@
 
 * Wed Aug 25 01:41:34 2004, pabs <pabs@pablotron.org>
   * fam.gemspec: added CVS to rdoc options
+
+* Wed Aug 25 02:16:56 2004, pabs <pabs@pablotron.org>
+  * fam.gemspec: removed --ri-site, added --title (rdoc opts)
