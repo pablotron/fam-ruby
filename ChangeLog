@@ -115,3 +115,6 @@
 
 * Tue Dec  5 01:32:37 EST 2006, Paul Duncan <pabs@pablotron.org>
   * examples/famtest.rb: clean up whitespace from patch
+
+* Tue Dec 05 01:51:41 2006, pabs <pabs@pablotron.org>
+  * releasing 0.2.0
