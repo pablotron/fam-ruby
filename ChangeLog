@@ -81,3 +81,17 @@
 
 * Wed Aug 25 02:16:56 2004, pabs <pabs@pablotron.org>
   * fam.gemspec: removed --ri-site, added --title (rdoc opts)
+
+* Tue Dec 05 00:29:29 2006, pabs <pabs@pablotron.org>
+  * extconf.rb: check for FAMDebugLevel (patch from dlutter@redhat.com)
+  * fam.c: check for FAM_DEBUG_{OFF|ON} (patch from dlutter@redhat.com)
+  * fam.c: don't fail if debug_level isn't supported
+  * examples/famtest.rb: don't fail if Fam#suspend isn't supported
+    (also a patch from dlutter@redhat.com)
+  * fam.c: don't define Fam#debug if HAVE_FAMDEBUGLEVEL isn't set (lets
+    you test for fam.respond_to?(:debug) instead of guessing what might
+    happen
+  * fam.c: switch from FamMonitorDir2() to FamMonitorDir(); the latter
+    doesn't leak requests.
+  * fam.c: added conditional support for Gamin-specific FamNoExists()
+    (patch from dlutter@redhat.com)

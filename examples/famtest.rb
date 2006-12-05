@@ -48,7 +48,11 @@ end
 
 # stop monitoring the file
 # (tests Fam::Connection#suspend)
-fam.suspend file_request
+begin
+    fam.suspend file_request
+rescue Fam::Error => d
+    puts d
+end
 
 # cancel the directory monitor
 # (tests Fam::Connection#cancel)

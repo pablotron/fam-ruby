@@ -27,6 +27,13 @@
 #include <ruby.h>
 #include <fam.h>
 
+/* fam.h in gamin doesn't have these */
+#ifndef FAM_DEBUG_OFF
+#define FAM_DEBUG_OFF 0
+#define FAM_DEBUG_ON  1
+#define FAM_DEBUG_VERBOSE 2
+#endif
+
 #define VERSION "0.1.4"
 #define UNUSED(x) ((void) (x))
 
@@ -369,8 +376,7 @@ static VALUE fam_conn_dir(VALUE self, VALUE dir)
 
   Data_Get_Struct(self, FAMConnection, conn);
   req = ALLOC(FAMRequest);
-  FAMREQUEST_GETREQNUM(req) = (int) req;
-  err = FAMMonitorDirectory2(conn, RSTRING(dir)->ptr, req);
+  err = FAMMonitorDirectory(conn, RSTRING(dir)->ptr, req, NULL);
 
   if (err == -1) {
     xfree(req);
@@ -631,6 +637,7 @@ static VALUE fam_conn_pending(VALUE self)
   return (err > 0) ? Qtrue : Qfalse;
 }
 
+#ifdef HAVE_FAMDEBUGLEVEL
 /*
  * Set the debug level of a Fam::Connection object.
  *
@@ -649,6 +656,7 @@ static VALUE fam_conn_set_debug(VALUE self, VALUE level)
   int err;
 
   Data_Get_Struct(self, FAMConnection, conn);
+
   err = FAMDebugLevel(conn, NUM2INT(level));
 
   if (err == -1) {
@@ -657,6 +665,7 @@ static VALUE fam_conn_set_debug(VALUE self, VALUE level)
 
   return self;
 }
+#endif
 
 /*
  * Get the file descriptor of a Fam::Connection object.
@@ -688,6 +697,37 @@ static VALUE fam_conn_fd(VALUE self)
   Data_Get_Struct(self, FAMConnection, conn);
   return INT2FIX(FAMCONNECTION_GETFD(conn));
 }
+
+#ifdef HAVE_FAMNOEXISTS
+/*
+ * Gamin-specific extension for FAM to not propagate Exists events on
+ * directory monitoring startup. This speeds up watching large
+ * directories but can introduce a mismatch between the FAM view of the
+ * directory and the program own view.
+ *
+ * Has no effect if FAMNoExists is not available.
+ *
+ * Raises a Fam::Error exception if an error is encountered.
+ * 
+ * Examples:
+ *   fam.no_exists
+ *
+ */
+static VALUE fam_conn_no_exists(VALUE self)
+{
+  FAMConnection *conn;
+  int err;
+
+  Data_Get_Struct(self, FAMConnection, conn);
+  err = FAMNoExists(conn);
+
+  if (err == -1) {
+    rb_raise(eError, "Couldn't turn off exists events: %s",
+             fam_error());
+  }
+  return self;
+}
+#endif
 
 void Init_fam(void)
 {
@@ -750,13 +790,19 @@ void Init_fam(void)
   rb_define_method(cConn, "pending?", fam_conn_pending, 0);
   rb_define_alias(cConn, "pending", "pending?");
 
+#ifdef HAVE_FAMDEBUGLEVEL
   rb_define_method(cConn, "debug_level=", fam_conn_set_debug, 1);
   rb_define_alias(cConn, "debug=", "debug_level=");
+#endif /* HAVE_FAMDEBUGLEVEL */
   
   rb_define_method(cConn, "fd", fam_conn_fd, 0);
   rb_define_alias(cConn, "get_descriptor", "fd");
   rb_define_alias(cConn, "descriptor", "fd");
   rb_define_alias(cConn, "get_fd", "fd");
+
+#ifdef HAVE_FAMNOEXISTS
+  rb_define_method(cConn, "no_exists", fam_conn_no_exists, 0);
+#endif /* HAVE_FAMNOEXISTS */
 
   /**********************/
   /* define Event class */
