@@ -109,3 +109,6 @@
   * extconf.rb: check for monitor functions
   * fam.c: added note about Gamin behavior to Fam::Connection#suspend,
     Fam::Connection#resume, and Fam##Connection#monitor_collection
+
+* Tue Dec  5 01:28:17 EST 2006, Paul Duncan <pabs@pablotron.org>
+  * README: slightly re-worded Gamin section

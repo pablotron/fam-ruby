@@ -27,8 +27,8 @@ System Requirements
   http://www.ruby-lang.org/
 
 If you don't have FAM installed, you can use Gamin instead.  Note that
-the API is slightly different; Please see "Using FAM-Ruby With Gamin"
-below for additional information.
+the FAM-Ruby API changes slightly under Gamin; see "Using FAM-Ruby With
+Gamin" below for additional information.
 
 Installation
 ============
@@ -44,7 +44,7 @@ method.  The API differences under Gamin are as follows:
   * Fam::Connection#suspend_monitor exists, but doesn't work
   * Fam::Connection#resume_monitor exists, but doesn't work
   * Fam::Connection#monitor_collection exists, but doesn't work
-  * Fam::Connection##no_exists is defined.
+  * Fam::Connection##no_exists is defined (as of Gamin 0.0.23).
 
 Comparing error values between FAM and Gamin will probably fail, since
 Gamin defines the same error values (as FamErrlist), but as different
