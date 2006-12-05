@@ -48,10 +48,11 @@ end
 
 # stop monitoring the file
 # (tests Fam::Connection#suspend)
+# (this doesn't work under Gamin, see README)
 begin
-    fam.suspend file_request
+  fam.suspend file_request
 rescue Fam::Error => d
-    puts d
+  $stderr.puts "fam.suspend FAILED (are you using Gamin?): #{d}"
 end
 
 # cancel the directory monitor

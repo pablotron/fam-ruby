@@ -112,3 +112,6 @@
 
 * Tue Dec  5 01:28:17 EST 2006, Paul Duncan <pabs@pablotron.org>
   * README: slightly re-worded Gamin section
+
+* Tue Dec  5 01:32:37 EST 2006, Paul Duncan <pabs@pablotron.org>
+  * examples/famtest.rb: clean up whitespace from patch
