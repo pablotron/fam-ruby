@@ -118,3 +118,8 @@
 
 * Tue Dec 05 01:51:41 2006, pabs <pabs@pablotron.org>
   * releasing 0.2.0
+
+* Tue Dec  5 02:03:01 EST 2006, Paul Duncan <pabs@pablotron.org>
+  * fam.gemspec: updated version
+  * fam.gemspec: add note about gamin
+  * fam.gemspec: add package signing support

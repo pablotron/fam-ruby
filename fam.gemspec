@@ -5,15 +5,15 @@ spec = Gem::Specification.new do |s|
   #### Basic information.
 
   s.name = 'FAM-Ruby'
-  s.version = '0.1.4'
+  s.version = '0.2.0'
   s.summary = <<-EOF
-    FAM (SGI's File Alteration Monitor) bindings for Ruby.
+    FAM (SGI's File Alteration Monitor) and Gamin bindings for Ruby.
   EOF
   s.description = <<-EOF
-    FAM (SGI's File Alteration Monitor) bindings for Ruby.
+    FAM (SGI's File Alteration Monitor) and Gamin bindings for Ruby.
   EOF
 
-  s.requirements << 'FAM, version 2.6.6.1 (or newer)'
+  s.requirements << 'FAM, version 2.6.6.1 (or newer) or Gamin'
   s.requirements << 'Ruby, version 1.6.7 (or newer)'
 
   #### Which files are to be included in this gem?  Everything!  (Except CVS directories.)
@@ -38,6 +38,10 @@ spec = Gem::Specification.new do |s|
 
   s.author = 'Paul Duncan'
   s.email = 'pabs@pablotron.org'
-  s.homepage = 'http://www.pablotron.org/software/fam-ruby/'
+  s.homepage = 'http://pablotron.org/software/fam-ruby/'
   s.rubyforge_project = 'fam-ruby'
+
+  # sign gems (strip from release)
+  s.signing_key = '/home/pabs/.rubygems/rubygems.key'
+  s.cert_chain = %w{ca rubygems}.map { |v| "/home/pabs/.rubygems/#{v}.crt" }
 end
