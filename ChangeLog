@@ -103,3 +103,9 @@
   * README: added note about Gamin
   * README: updated version to 0.2.0
   * fam.c: updated version to 0.2.0
+
+* Tue Dec  5 01:25:18 EST 2006, Paul Duncan <pabs@pablotron.org>
+  * README: added section about Gamin support
+  * extconf.rb: check for monitor functions
+  * fam.c: added note about Gamin behavior to Fam::Connection#suspend,
+    Fam::Connection#resume, and Fam##Connection#monitor_collection

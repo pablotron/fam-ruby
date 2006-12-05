@@ -422,11 +422,13 @@ static VALUE fam_conn_file(VALUE self, VALUE file)
   return wrap_req(req);
 }
 
+#ifdef HAVE_FAMMONITORCOLLECTION
 /*
  * Monitor a collection.
  *
  * Raises a Fam::Error exception if the collection could not be
- * monitored.
+ * monitored.  Note that this method exists under Gamin, but does not
+ * actually do anything.
  *
  * Aliases:
  *   Fam::Collection#monitor_col
@@ -463,12 +465,15 @@ static VALUE fam_conn_col(VALUE self, VALUE col, VALUE depth, VALUE mask)
 
   return wrap_req(req);
 }
+#endif /* HAVE_FAMMONITORCOLLECTION */
 
+#ifdef HAVE_FAMSUSPENDMONITOR
 /*
  * Suspend (stop monitoring) a monitor request.
  *
  * Raises a Fam::Error exception if the monitor request could not be
- * suspended.
+ * suspended.  Note that this method exists under Gamin, but does not
+ * actually do anything.
  * 
  * Aliases:
  *   Fam::Connection#suspend
@@ -495,12 +500,15 @@ static VALUE fam_conn_suspend(VALUE self, VALUE request)
 
   return self;
 }
+#endif /* HAVE_FAMSUSPENDMONITOR */
 
+#ifdef HAVE_FAMRESUMEMONITOR
 /*
  * Resume (start monitoring) a monitor request.
  *
  * Raises a Fam::Error exception if the monitor request could not be
- * resumed.
+ * resumed.  Note that this method exists under Gamin, but does not
+ * actually do anything.
  * 
  * Aliases:
  *   Fam::Connection#resume
@@ -527,6 +535,7 @@ static VALUE fam_conn_resume(VALUE self, VALUE request)
 
   return self;
 }
+#endif /* HAVE_FAMRESUMEMONITOR */
 
 /*
  * Cancel a monitor request.
@@ -641,7 +650,8 @@ static VALUE fam_conn_pending(VALUE self)
 /*
  * Set the debug level of a Fam::Connection object.
  *
- * Raises a Fam::Error exception on failure.
+ * Raises a Fam::Error exception on failure.  Note that this method does
+ * not exist under Gamin.
  *
  * Aliases:
  *   Fam::Connection#debug
@@ -769,16 +779,22 @@ void Init_fam(void)
   rb_define_method(cConn, "monitor_file", fam_conn_file, 1);
   rb_define_alias(cConn, "file", "monitor_file");
 
+#ifdef HAVE_FAMMONITORCOLLECTION
   rb_define_method(cConn, "monitor_collection", fam_conn_col, 2);
   rb_define_alias(cConn, "monitor_col", "monitor_collection");
   rb_define_alias(cConn, "collection", "monitor_collection");
   rb_define_alias(cConn, "col", "monitor_collection");
+#endif /* HAVE_FAMMONITORCOLLECTION */
 
+#ifdef HAVE_FAMSUSPENDMONITOR
   rb_define_method(cConn, "suspend_monitor", fam_conn_suspend, 1);
   rb_define_alias(cConn, "suspend", "suspend_monitor");
+#endif /* HAVE_FAMSUSPENDMONITOR */
 
+#ifdef HAVE_FAMRESUMEMONITOR
   rb_define_method(cConn, "resume_monitor", fam_conn_resume, 1);
   rb_define_alias(cConn, "resume", "resume_monitor");
+#endif /* HAVE_FAMRESUMEMONITOR */
 
   rb_define_method(cConn, "cancel_monitor", fam_conn_cancel, 1);
   rb_define_alias(cConn, "cancel", "cancel_monitor");
