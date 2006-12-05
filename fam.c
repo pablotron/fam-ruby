@@ -1,5 +1,5 @@
 /************************************************************************/
-/* Copyright (c) 2002-2004 Paul Duncan                                  */
+/* Copyright (c) 2002-2006 Paul Duncan                                  */
 /*                                                                      */
 /* Permission is hereby granted, free of charge, to any person          */
 /* obtaining a copy of this software and associated documentation files */
@@ -34,7 +34,7 @@
 #define FAM_DEBUG_VERBOSE 2
 #endif
 
-#define VERSION "0.1.4"
+#define VERSION "0.2.0"
 #define UNUSED(x) ((void) (x))
 
 static VALUE mFam;

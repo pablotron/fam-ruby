@@ -95,3 +95,11 @@
     doesn't leak requests.
   * fam.c: added conditional support for Gamin-specific FamNoExists()
     (patch from dlutter@redhat.com)
+
+* Tue Dec  5 00:52:47 EST 2006, Paul Duncan <pabs@pablotron.org>
+  * AUTHORS: added David Lutterkort
+  * COPYING: updated year to 2006
+  * MANIFEST: removed CVS entries
+  * README: added note about Gamin
+  * README: updated version to 0.2.0
+  * fam.c: updated version to 0.2.0

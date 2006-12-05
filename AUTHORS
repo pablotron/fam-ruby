@@ -9,3 +9,6 @@ Nobuyoshi Nakada <nobu@ruby-lang.org>
 * made FAM-Ruby interruptible and thread switchable.
 * subclass Exception to FAM::FAMError
 
+David Lutterkort <dlutter@redhat.com>
+* support for Gamin (http://www.gnome.org/~veillard/gamin/)
+* patch to fix request leak

@@ -1,7 +1,7 @@
-FAM-Ruby 0.1.4 README
+FAM-Ruby 0.2.0 README
 =====================
 
-This document was last updated on Sat Jul 10 18:19:36 2004.
+This document was last updated on Tue Dec 05 00:45:30 2006.
 Please see the file COPYING for licensing and warranty information.  The
 latest version of this library is available at the following URL:
 http://www.pablotron.org/software/fam-ruby/.
@@ -13,9 +13,11 @@ FAM-Ruby is a Ruby interface to SGI's File Alteration Monitor
 directories for changes (file modification, creation, and removal) -- in
 an event-driven manner.  FAM is available on a variety of platforms,
 including Irix, Linux, and BSD variants (a patch for systems that use
-dnotify is also available).  An RDoc-generated API reference is
-available in doc/, and a brief description of each event code is
-available in event_codes.txt.
+dnotify is also available).  As of version 0.2.0, FAM-Ruby also adds
+support for Gamin (http://www.gnome.org/~veillard/gamin/), a GNOME
+library that is compatible with a subset of FAM.  An RDoc-generated API
+reference is available in doc/, and a brief description of each event
+code is available in event_codes.txt.
 
 System Requirements
 ===================
@@ -23,6 +25,8 @@ System Requirements
   http://oss.sgi.com/projects/fam/
 - Ruby, version 1.6.7 (or newer):
   http://www.ruby-lang.org/
+
+Note: If you don't have FAM installed, you can use Gamin instead.
 
 Installation
 ============
